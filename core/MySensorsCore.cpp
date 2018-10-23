@@ -6,8 +6,8 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
- * Copyright (C) 2013-2017 Sensnology AB
- * Full contributor list: https://github.com/mysensors/Arduino/graphs/contributors
+ * Copyright (C) 2013-2018 Sensnology AB
+ * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
  * Support Forum: http://forum.mysensors.org
@@ -355,8 +355,19 @@ bool present(const uint8_t childSensorId, const uint8_t sensorType, const char *
              const bool ack)
 {
 	return _sendRoute(build(_msgTmp, GATEWAY_ADDRESS, childSensorId, C_PRESENTATION, sensorType,
-	                        ack).set(childSensorId==NODE_SENSOR_ID?MYSENSORS_LIBRARY_VERSION:description));
+	                        ack).set(childSensorId == NODE_SENSOR_ID ? MYSENSORS_LIBRARY_VERSION : description));
 }
+
+#if !defined(__linux__)
+bool present(const uint8_t childSensorId, const uint8_t sensorType,
+             const __FlashStringHelper *description,
+             const bool ack)
+{
+	return _sendRoute(build(_msgTmp, GATEWAY_ADDRESS, childSensorId, C_PRESENTATION, sensorType,
+	                        ack).set(childSensorId == NODE_SENSOR_ID ? F(" MYSENSORS_LIBRARY_VERSION "): description));
+}
+#endif
+
 
 bool sendSketchInfo(const char *name, const char *version, const bool ack)
 {
@@ -400,15 +411,14 @@ bool requestTime(const bool ack)
 }
 
 // Message delivered through _msg
-bool _processInternalMessages(void)
+bool _processInternalCoreMessage(void)
 {
 	const uint8_t type = _msg.type;
-
 	if (_msg.sender == GATEWAY_ADDRESS) {
 		if (type == I_REBOOT) {
 #if !defined(MY_DISABLE_REMOTE_RESET)
-			// Requires MySensors or other bootloader with watchdogs enabled
 			setIndication(INDICATION_REBOOT);
+			// WDT fuse should be enabled
 			hwReboot();
 #endif
 		} else if (type == I_REGISTRATION_RESPONSE) {
@@ -468,7 +478,7 @@ bool _processInternalMessages(void)
 			}
 #endif
 		} else {
-			return false;
+			return false; // further processing required
 		}
 	} else {
 		// sender is a node
@@ -496,10 +506,10 @@ bool _processInternalMessages(void)
 #endif
 #endif
 		} else {
-			return false;
+			return false; // further processing required
 		}
 	}
-	return true;
+	return true; // if not GW or no further processing required
 }
 
 
@@ -696,7 +706,7 @@ void _nodeLock(const char* str)
 {
 #ifdef MY_NODE_LOCK_FEATURE
 	// Make sure EEPROM is updated to locked status
-	hwWriteConfig(EEPROM_NODE_LOCK_COUNTER, 0);
+	hwWriteConfig(EEPROM_NODE_LOCK_COUNTER_ADDRESS, 0);
 	while (1) {
 		setIndication(INDICATION_ERR_LOCKED);
 		CORE_DEBUG(PSTR("MCO:NLK:NODE LOCKED. TO UNLOCK, GND PIN %" PRIu8 " AND RESET\n"),
@@ -720,7 +730,7 @@ void _checkNodeLock(void)
 {
 #ifdef MY_NODE_LOCK_FEATURE
 	// Check if node has been locked down
-	if (hwReadConfig(EEPROM_NODE_LOCK_COUNTER) == 0) {
+	if (hwReadConfig(EEPROM_NODE_LOCK_COUNTER_ADDRESS) == 0) {
 		// Node is locked, check if unlock pin is asserted, else hang the node
 		hwPinMode(MY_NODE_UNLOCK_PIN, INPUT_PULLUP);
 		// Make a short delay so we are sure any large external nets are fully pulled
@@ -728,7 +738,7 @@ void _checkNodeLock(void)
 		while (hwMillis() - enter < 2) {}
 		if (hwDigitalRead(MY_NODE_UNLOCK_PIN) == 0) {
 			// Pin is grounded, reset lock counter
-			hwWriteConfig(EEPROM_NODE_LOCK_COUNTER, MY_NODE_LOCK_COUNTER_MAX);
+			hwWriteConfig(EEPROM_NODE_LOCK_COUNTER_ADDRESS, MY_NODE_LOCK_COUNTER_MAX);
 			// Disable pullup
 			hwPinMode(MY_NODE_UNLOCK_PIN, INPUT);
 			setIndication(INDICATION_ERR_LOCKED);
@@ -738,9 +748,9 @@ void _checkNodeLock(void)
 			hwPinMode(MY_NODE_UNLOCK_PIN, INPUT);
 			_nodeLock("LDB"); //Locked during boot
 		}
-	} else if (hwReadConfig(EEPROM_NODE_LOCK_COUNTER) == 0xFF) {
+	} else if (hwReadConfig(EEPROM_NODE_LOCK_COUNTER_ADDRESS) == 0xFF) {
 		// Reset value
-		hwWriteConfig(EEPROM_NODE_LOCK_COUNTER, MY_NODE_LOCK_COUNTER_MAX);
+		hwWriteConfig(EEPROM_NODE_LOCK_COUNTER_ADDRESS, MY_NODE_LOCK_COUNTER_MAX);
 	}
 #endif
 }

@@ -6,8 +6,8 @@
 * network topology allowing messages to be routed to nodes.
 *
 * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
-* Copyright (C) 2013-2017 Sensnology AB
-* Full contributor list: https://github.com/mysensors/Arduino/graphs/contributors
+* Copyright (C) 2013-2018 Sensnology AB
+* Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
 *
 * Documentation: http://www.mysensors.org
 * Support Forum: http://forum.mysensors.org
@@ -44,9 +44,9 @@ void displaySplashScreen(void)
 		}
 		const uint8_t rep = val > 7 ? val - 5 : 1;
 		for (uint8_t c = 0; c<rep; c++) {
-			MY_SERIALDEVICE.print(display);
+                    MY_DEBUGDEVICE.print(display);
 		}
 	}
-	MY_SERIALDEVICE.println(F(MYSENSORS_LIBRARY_VERSION "\n"));
+	MY_DEBUGDEVICE.println(F(MYSENSORS_LIBRARY_VERSION "\n"));
 #endif
 }

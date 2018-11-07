@@ -62,7 +62,8 @@
 #define FIRMWARE_MAX_REQUESTS	(5u)				//!< Number of times a firmware block should be requested before giving up
 #define MY_OTA_RETRY			(5u)				//!< Number of times to request a fw block before giving up
 #define MY_OTA_RETRY_DELAY		(500u)				//!< Number of milliseconds before re-requesting a FW block
-#define FIRMWARE_START_OFFSET	(10u)				//!< Start offset for firmware in flash (DualOptiboot wants to keeps a signature first)
+#define FIRMWARE_START_ADDRESS	0x1000				// Смещение с учётом загрузчика
+#define FIRMWARE_START_OFFSET	(16u)				//!< Start offset for firmware in flash (DualOptiboot wants to keeps a signature first)
 
 #define MY_OTA_BOOTLOADER_MAJOR_VERSION (3u)		//!< Bootloader version major
 #define MY_OTA_BOOTLOADER_MINOR_VERSION (0u)		//!< Bootloader version minor

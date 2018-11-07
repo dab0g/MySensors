@@ -151,15 +151,21 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 
 // FLASH
 #if defined(MY_OTA_FIRMWARE_FEATURE)
-#ifndef MCUBOOT_PRESENT
-#if defined(MY_OTA_USE_I2C_EEPROM)
-#include "drivers/I2CEeprom/I2CEeprom.cpp"
-#else
-#include "drivers/SPIFlash/SPIFlash.cpp"
+ #ifdef ARDUINO_ARCH_STM32F1
+  #include "winbondflash.h"
+  #include "core/MyOTAFirmwareUpdate_STM32F1.cpp"   
+ #else
+  
+ 
+ #ifndef MCUBOOT_PRESENT
+  #if defined(MY_OTA_USE_I2C_EEPROM)
+   #include "drivers/I2CEeprom/I2CEeprom.cpp"
+  #else
+   #include "drivers/SPIFlash/SPIFlash.cpp"
+  #endif
+ #endif
 #endif
-#endif
-#include "core/MyOTAFirmwareUpdate.cpp"
-#endif
+#endif 
 
 // GATEWAY - TRANSPORT
 #if defined(MY_CONTROLLER_IP_ADDRESS) || defined(MY_CONTROLLER_URL_ADDRESS)

@@ -82,18 +82,21 @@ bool firmwareOTAUpdateProcess(void)
 			(void)memcpy(&_nodeFirmwareConfig, firmwareConfigResponse, sizeof(nodeFirmwareConfig_t));
 			// Init flash
 //			if (!_flash.initialize()) {
-  			if(!_flash.begin(_W25Q128,spiToUse,MY_OTA_FLASH_SS)) {
+  			if(!_flash.begin(_M25P40,spiToUse,MY_OTA_FLASH_SS)) {
 				setIndication(INDICATION_ERR_FW_FLASH_INIT);
 				OTA_DEBUG(PSTR("!OTA:FWP:FLASH INIT FAIL\n"));	// failed to initialise flash
 				_firmwareUpdateOngoing = false;
 			} else {
 				OTA_DEBUG(PSTR("OTA:FWP:SPI Flash init\n"));	// FW update initiated
+					// _firmwareUpdateOngoing = false;
+					// return true;
 				uint32_t firmwareSize = firmwareConfigResponse->blocks * FIRMWARE_BLOCK_SIZE;
 				uint32_t firmwareIndex=0;
 				uint16_t flashBlock=0;
 				while (firmwareSize > firmwareIndex + 0x10000) {
         		_flash.WE();
-        		_flash.erase32kBlock(flashBlock);
+        		//_flash.erase32kBlock(flashBlock);
+				_flash.erase64kBlock(flashBlock);
 				firmwareIndex += 0x10000;
 				flashBlock += 1;
 				hwWatchdogReset();
@@ -102,7 +105,8 @@ bool firmwareOTAUpdateProcess(void)
 				}
 				if (firmwareSize > firmwareIndex) {
 				_flash.WE();
-        		_flash.erase32kBlock(flashBlock);
+        		_flash.erase64kBlock(flashBlock);
+				hwWatchdogReset();
 				// wait until flash erased
 				while ( _flash.busy() ) {}
 
@@ -155,10 +159,9 @@ bool firmwareOTAUpdateProcess(void)
 					const uint16_t firmwareSize = FIRMWARE_BLOCK_SIZE * _nodeFirmwareConfig.blocks;
 //					const uint8_t OTAbuffer[FIRMWARE_START_OFFSET] = {'F','L','X','I','M','G',':', (uint8_t)(firmwareSize >> 8), (uint8_t)(firmwareSize & 0xff),':'};
 					uint8_t OTAbuffer[FIRMWARE_START_OFFSET] = {'F','L','X','I',':', (uint8_t)(firmwareSize >> 24), (uint8_t)(firmwareSize >> 16), (uint8_t)(firmwareSize >> 8), (uint8_t)(firmwareSize & 0xff),':'};
-					//_flash.writeBytes(0, OTAbuffer, FIRMWARE_START_OFFSET);
 					while(_flash.busy());
     	    		_flash.WE();
-        			_flash.writebyte(0, OTAbuffer, FIRMWARE_START_OFFSET);
+        			_flash.writebyte(FIRMWARE_START_ADDRESS, OTAbuffer, FIRMWARE_START_OFFSET);
 					// wait until flash ready
 					while (_flash.busy()) {}
 					hwReboot();
@@ -201,9 +204,8 @@ bool transportIsValidFirmware(void)
 {
 	// init crc
 	uint16_t crc = ~0;
-	for (uint16_t i = 0; i < _nodeFirmwareConfig.blocks * FIRMWARE_BLOCK_SIZE; ++i) {
+	for (uint32_t i = 0; i < _nodeFirmwareConfig.blocks * FIRMWARE_BLOCK_SIZE; ++i) {
 		crc ^= _flash.readByte(i + FIRMWARE_START_OFFSET);
-		//crc ^= _flash.readByte(i + FIRMWARE_START_OFFSET);
 		for (int8_t j = 0; j < 8; ++j) {
 			if (crc & 1) {
 				crc = (crc >> 1) ^ 0xA001;

@@ -46,6 +46,16 @@ bool hwInit(void)
 {
 #if !defined(MY_DISABLED_SERIAL)
 	MY_SERIALDEVICE.begin(MY_BAUD_RATE);
+	if (MY_SERIALDEVICE == Serial) {
+		pinMode(LED_BUILTIN, OUTPUT);
+		while (!(MY_SERIALDEVICE.isConnected() && (MY_SERIALDEVICE.getDTR() || MY_SERIALDEVICE.getRTS())))
+		{
+			digitalWrite(LED_BUILTIN,!digitalRead(LED_BUILTIN));// Turn the LED from off to on, or on to off
+			delay(100);         // fast blink
+		}
+		pinMode(LED_BUILTIN, INPUT);
+		delay(200);
+	}
 #endif
 	if (EEPROM.init() == EEPROM_OK) {
 		uint16 cnt;

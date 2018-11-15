@@ -1,4 +1,4 @@
-/**
+/*
  * The MySensors Arduino library handles the wireless radio link and protocol
  * between your home built sensors/actuators and HA controller of choice.
  * The sensors forms a self healing radio network with optional repeaters. Each
@@ -7,7 +7,7 @@
  *
  * Created by Henrik Ekblad <henrik.ekblad@mysensors.org>
  * Copyright (C) 2013-2018 Sensnology AB
- * Full contributor list: https://github.com/mysensors/Arduino/graphs/contributors
+ * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
  * Support Forum: http://forum.mysensors.org
@@ -32,7 +32,7 @@
 #define MY_DEBUG
 
 // Enables and select radio type (if attached)
-#define MY_RADIO_RF24
+//#define MY_RADIO_RF24
 //#define MY_RADIO_RFM69
 //#define MY_RADIO_RFM95
 
@@ -40,8 +40,8 @@
 #define MY_GATEWAY_ESP32
 
 // Set this node's subscribe and publish topic prefix
-#define MY_MQTT_PUBLISH_TOPIC_PREFIX "mygateway1-out"
-#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "mygateway1-in"
+#define MY_MQTT_PUBLISH_TOPIC_PREFIX "domoticz/out"
+#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "domoticz/in"
 
 // Set MQTT client id
 #define MY_MQTT_CLIENT_ID "mysensors-1"
@@ -51,8 +51,8 @@
 //#define MY_MQTT_PASSWORD "password"
 
 // Set WIFI SSID and password
-#define MY_WIFI_SSID "MySSID"
-#define MY_WIFI_PASSWORD "MyVerySecretPassword"
+#define MY_WIFI_SSID "KGB1"
+#define MY_WIFI_PASSWORD "ereWlrutntUJymIuvYOlL-_RR1YWnusbrdIe6RKtWh9LEZAy_G5XNDlXMVL4HKf"
 
 // Set the hostname for the WiFi Client. This is the hostname
 // it will pass to the DHCP server if not static.
@@ -66,7 +66,7 @@
 //#define MY_IP_SUBNET_ADDRESS 255,255,255,0
 
 // MQTT broker ip address.
-#define MY_CONTROLLER_IP_ADDRESS 192, 168, 1, 5
+#define MY_CONTROLLER_IP_ADDRESS 10, 10, 11, 4
 
 // The MQTT broker port to to open
 #define MY_PORT 1883

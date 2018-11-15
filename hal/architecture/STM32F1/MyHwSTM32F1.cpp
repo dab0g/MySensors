@@ -46,7 +46,8 @@ bool hwInit(void)
 {
 #if !defined(MY_DISABLED_SERIAL)
 	MY_SERIALDEVICE.begin(MY_BAUD_RATE);
-	if (MY_SERIALDEVICE == Serial) {
+	#if defined(MY_GATEWAY_SERIAL)
+	#if MY_SERIALDEVICE == Serial
 		pinMode(LED_BUILTIN, OUTPUT);
 		while (!(MY_SERIALDEVICE.isConnected() && (MY_SERIALDEVICE.getDTR() || MY_SERIALDEVICE.getRTS())))
 		{
@@ -55,7 +56,10 @@ bool hwInit(void)
 		}
 		pinMode(LED_BUILTIN, INPUT);
 		delay(200);
-	}
+	#else
+		while (!MY_SERIALDEVICE) {}
+	#endif
+	#endif
 #endif
 	adc_calibrate(ADC1);
 
